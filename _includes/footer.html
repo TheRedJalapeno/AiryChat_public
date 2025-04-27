@@ -1,0 +1,35 @@
+<!-- _includes/footer.html -->
+<footer id="main-footer">
+    <div class="container">
+        <div class="footer-widgets column-wide">
+            <div class="footer-widget">
+                <div class="fwidget et_pb_widget widget_block widget_text">
+                    <p>Copyright <span id="currentYear"></span><br><strong>AiryChat LLC</strong></p>
+                    <script>
+                        document.getElementById("currentYear").innerHTML = new Date().getFullYear();
+                    </script>
+                </div>
+            </div>
+            <div class="footer-widget">
+                <div id="nav_menu-3" class="fwidget et_pb_widget widget_nav_menu">
+                    <div class="menu-footer-container">
+                        <ul id="menu-footer" class="menu">
+                            <li class="menu-item"><a href="/about">About</a></li>
+                            <li class="menu-item"><a href="/contact">Contact Us</a></li>
+                            <li class="menu-item"><a href="/investor-relations">Investor Relations</a></li>
+                            <li class="menu-item"><a href="/business">AI for Business</a></li>
+                            <li class="menu-item"><a href="/privacy">Privacy Policy</a></li>
+                            <li class="menu-item"><a href="/terms">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-widget">
+                <div id="block-9" class="fwidget et_pb_widget widget_block widget_text">
+                    <p><span>Support</span><span>@AiryChat.com</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include analytics.html %}
+</footer>
