@@ -25,7 +25,8 @@ description: >- # this means to ignore newlines until "baseurl:"
   It is easy to use and deploy. You can use it for your own business or as a service.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://airychat.com" # the base hostname & protocol for your site, e.g. http://example.com
-
+site.image: "/assets/images/airychat_500.png" # the image for your site, used in SEO
+site.image.alt: "AiryChat Logo" # the alt text for your site image, used in SEO
 
 # Build settings
 theme: minima

@@ -1,0 +1,419 @@
+---
+layout: simple
+title: "AiryChat w Becky"
+permalink: /becky/
+description: "AiryChat with Becky, a simple AI girlfriend experience."
+author: "AiryChat"
+image: "/assets/images/airychat_100.png"
+image_alt: "AiryChat with Becky"
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        {%- assign meta_title = page.title | default: site.title -%}
+        {%- assign meta_description = page.description | default: site.description -%}
+        {%- assign meta_author = page.author | default: site.author -%}
+        {%- assign meta_image = page.image | default: site.image | prepend: site.url -%}
+        {%- assign meta_url = site.url | append: page.url -%}
+
+        <title>{{ meta_title }}</title>
+
+        <!-- Basic meta -->
+        <meta name="description" content="{{ meta_description }}">
+        <meta name="author" content="{{ meta_author }}">
+        <link rel="canonical" href="{{ meta_url }}">
+
+        <!-- Open Graph -->
+        <meta property="og:site_name" content="{{ site.title }}">
+        <meta property="og:title" content="{{ meta_title }}">
+        <meta property="og:description" content="{{ meta_description }}">
+        <meta property="og:type" content="article">
+        <meta property="og:url" content="{{ meta_url }}">
+        <meta property="og:image" content="{{ meta_image }}">
+        <meta property="og:image:alt" content="{{ page.image_alt | default: site.image_alt }}">
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ meta_title }}">
+        <meta name="twitter:description" content="{{ meta_description }}">
+        <meta name="twitter:image" content="{{ meta_image }}">
+        <meta name="twitter:creator" content="{{ site.twitter | default: site.author }}">
+
+        <!-- JSON-LD Structured Data -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "url": "{{ meta_url }}",
+            "name": "{{ meta_title }}",
+            "description": "{{ meta_description }}",
+            "publisher": {
+                "@type": "Organization",
+                "name": "{{ site.title }}"
+            },
+            "image": "{{ meta_image }}"
+        }
+        </script>
+
+        <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+        a {
+            color: #ff69b4;
+            text-decoration: none;
+        }
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            height: 50px;
+            width: 50px;
+            margin-left: auto;
+        }
+        h1 {
+            font-size: 1.5em;
+            color: #ff69b4;
+            margin-right: auto;
+        }
+    
+
+        /* Footer styles */
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+
+        /* Chat container styles */
+        .chat-container {
+            min-height: 20vh;
+            max-height: 50vh;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: white;
+            margin-bottom: 10px;
+        }
+        .message {
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #e1f5fe;
+            margin-left: auto;
+        }
+        .ai-message {
+            background-color: #f5f5f5;
+            margin-right: auto;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        #user-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #ff5ba7;
+        }
+        @keyframes spin {
+        to { transform: rotate(360deg); }
+        }
+        .token-counter {
+            text-align: right;
+            margin-bottom: 5px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>Chat w Becky</h1>
+        <a href="https://airychat.com/?utm_source=becky"><img class="logo" src="/assets/images/airychat_100.png" alt="AiryChat AI"></a>
+    </nav>
+    <div class="token-counter">
+        Tokens used today: <span id="tokens-used">0</span> / <span id="token-limit">2000</span>
+    </div>
+    <div class="chat-container" id="chat-container"></div>
+    <div class="input-area">
+        <div style="position: relative; flex-grow: 1;">
+            <input type="text" id="user-input" placeholder="Type a message..." maxlength="280">
+            <div id="char-counter" style="position: absolute; right: 10px; bottom: 8px; font-size: 12px; color: #777;">0/280</div>
+        </div>
+        <button id="send-button">Send</button>
+    </div>
+
+    <footer>
+        <hr>
+        <p>Developed by AiryChat AI</p>
+        <div class="copyright">
+        <p>Copyright &copy;
+            <script>document.write(new Date().getFullYear())</script>, <a href="https://airychat.com/?utm_source=becky"
+            target="_blank">AiryChat LLC</a>
+        </p>
+        <p><a href="mailto:robert@airychat.com">Contact the Team</a></p>
+        </div>
+    </footer>
+
+
+    <script>
+        // Cloudflare Worker endpoint (replace with your actual Worker URL after deployment)
+        const API_ENDPOINT = 'https://airychat.com/api/v1/github/becky-chat';
+        
+        // Fixed model (cheapest option)
+        const MODEL = 'gpt-4o-mini';
+        
+        // Store DOM elements
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const charCounter = document.getElementById('char-counter');
+        const tokensUsed = document.getElementById('tokens-used');
+        const tokenLimit = document.getElementById('token-limit');
+        
+        // Character limit (Twitter-style)
+        const CHAR_LIMIT = 280;
+        
+        // App state
+        let state = {
+            messages: JSON.parse(localStorage.getItem('aiGirlfriend_messages') || '[]'),
+            dailyTokens: parseInt(localStorage.getItem('aiGirlfriend_dailyTokens') || '0'),
+            tokenLimit: parseInt(localStorage.getItem('aiGirlfriend_tokenLimit') || '2000'),
+            lastResetDate: localStorage.getItem('aiGirlfriend_lastResetDate') || new Date().toDateString()
+        };
+        
+        // Initialize the app
+        function initApp() {
+            // Check if a new day has started
+            const today = new Date().toDateString();
+            if (today !== state.lastResetDate) {
+                state.dailyTokens = 0;
+                state.lastResetDate = today;
+                saveState();
+            }
+            
+            // Update UI
+            tokenLimit.textContent = state.tokenLimit;
+            tokensUsed.textContent = state.dailyTokens;
+            
+            // Load previous messages
+            renderMessages();
+            
+            // Add initial message if no messages exist
+            if (state.messages.length === 0) {
+                addAiMessage("hey");
+            }
+        }
+        
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('aiGirlfriend_messages', JSON.stringify(state.messages));
+            localStorage.setItem('aiGirlfriend_dailyTokens', state.dailyTokens.toString());
+            localStorage.setItem('aiGirlfriend_tokenLimit', state.tokenLimit.toString());
+            localStorage.setItem('aiGirlfriend_lastResetDate', state.lastResetDate);
+        }
+        
+        // Render all messages
+        function renderMessages() {
+            chatContainer.innerHTML = '';
+            state.messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(msg.role === 'user' ? 'user-message' : 'ai-message');
+                messageDiv.textContent = msg.content;
+                chatContainer.appendChild(messageDiv);
+            });
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Add a user message
+        function addUserMessage(content) {
+            const message = { role: 'user', content };
+            state.messages.push(message);
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'user-message');
+            messageDiv.textContent = content;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            saveState();
+        }
+        
+        // Add an AI message
+        function addAiMessage(content) {
+            const message = { role: 'assistant', content };
+            state.messages.push(message);
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'ai-message');
+            messageDiv.textContent = content;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            saveState();
+        }
+        
+        // Roughly estimate tokens (very simplified)
+        function estimateTokens(text) {
+            // Rough approximation: ~4 characters per token
+            return Math.ceil(text.length / 4);
+        }
+        
+        // Check if token limit is reached
+        function isTokenLimitReached() {
+            return state.dailyTokens >= state.tokenLimit;
+        }
+        
+        // Handle sending a message
+        async function sendMessage() {
+            const content = userInput.value.trim();
+            if (!content) return;
+            
+            // Clear input
+            userInput.value = '';
+            charCounter.textContent = '0/280';
+            
+            // Add user message
+            addUserMessage(content);
+            
+            // Check token limit
+            if (isTokenLimitReached()) {
+                addAiMessage("need to run, see you tmrw 💤");
+                return;
+            }
+            
+            // Disable send button while processing
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<span style="display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite;"></span>';
+            
+            try {
+                // Prepare messages for API (including system prompt)
+                const apiMessages = [
+                    {
+                        role: 'system',
+                        content: 'You are an aloof young woman texting with a slight crush. Do not use punctuation or capitalization. Keep messages very short. Copy your crushs emotional warmth for each new message. Reply in fewer than 50 words. If your crush mentions self harm, reply with "yikes" or "cringe" or similar.',
+                    },
+                    ...state.messages.slice(-10) // Send only the last 10 messages to keep context size manageable
+                ];
+                
+                // Call Cloudflare Worker (which proxies to GitHub Models API)
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: MODEL,
+                        messages: apiMessages,
+                        max_tokens: 150,
+                        temperature: 1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error?.message || `API Error: ${response.status}`);
+                }
+                
+                // Get AI reply
+                const aiReply = data.choices[0].message.content;
+                
+                // Add AI message
+                addAiMessage(aiReply);
+                
+                // Update token count (use actual usage if available, otherwise estimate)
+                const promptTokens = data.usage?.prompt_tokens || estimateTokens(apiMessages.map(m => m.content).join(' '));
+                const completionTokens = data.usage?.completion_tokens || estimateTokens(aiReply);
+                const totalTokens = promptTokens + completionTokens;
+                
+                state.dailyTokens += totalTokens;
+                tokensUsed.textContent = state.dailyTokens;
+                saveState();
+                
+                // Check if token limit is now reached after this exchange
+                if (isTokenLimitReached()) {
+                    setTimeout(() => {
+                        addAiMessage("gotta go, cya tmrw");
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                let errorMessage = "cant chat now call me later";
+                
+                // Provide more helpful error messages
+                if (error.message.includes('401')) {
+                    errorMessage = "Your GitHub token seems invalid. Check the code?";
+                } else if (error.message.includes('429')) {
+                    errorMessage = "Too many messages! Rate limited. Try again in a bit?";
+                } else if (error.message.includes('403')) {
+                    errorMessage = "Token needs models:read permission. Check GitHub settings?";
+                }
+                
+                addAiMessage(errorMessage);
+            } finally {
+                // Re-enable send button
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send';
+            }
+        }
+        
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        // Update character counter
+        userInput.addEventListener('input', () => {
+            const currentLength = userInput.value.length;
+            charCounter.textContent = `${currentLength}/${CHAR_LIMIT}`;
+            
+            // Change color when approaching limit
+            if (currentLength >= CHAR_LIMIT * 0.9) {
+                charCounter.style.color = '#ff3333';
+            } else {
+                charCounter.style.color = '#777';
+            }
+        });
+        
+        // Initialize app
+        initApp();
+    </script>
+</body>
+</html>
