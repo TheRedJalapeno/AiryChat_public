@@ -4,7 +4,7 @@ title: "AiryChat w Jess"
 permalink: /app/jess
 description: "Jess from marketing"
 author: "AiryChat"
-image: "/assets/images/classic-app/jess.webp"
+image: "/assets/images/jess.webp"
 image_alt: "AiryChat with Jess"
 chatbot: true
 persona_id: jess

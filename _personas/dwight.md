@@ -4,7 +4,7 @@ title: "AiryChat w Dwight"
 permalink: /app/dwight
 description: "Dwight the analyst"
 author: "AiryChat"
-image: "/assets/images/classic-app/dwight.webp"
+image: "/assets/images/dwight.webp"
 image_alt: "AiryChat with Dwight"
 chatbot: true
 persona_id: dwight

@@ -4,7 +4,7 @@ title: "AiryChat w Linus"
 permalink: /app/linus
 description: "Linus the senior developer"
 author: "AiryChat"
-image: "/assets/images/classic-app/linus.webp"
+image: "/assets/images/linus.webp"
 image_alt: "AiryChat with Linus"
 chatbot: true
 persona_id: linus
