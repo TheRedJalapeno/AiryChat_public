@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+
+    {% include header.html %}
+    {% include nav.html %}
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ page.title | default: "Classic App" }}</title>
+  <style>
+    nav {height: 50px;}
+    :root{--sidebar:#0f172a;--accent:#ff69b4;--bg:#f8f8f8}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg)}
+    .app{display:flex;height:100vh}
+    .sidebar{width:260px;background:linear-gradient(180deg,var(--sidebar),#0b1220);color:#fff;padding:16px;box-sizing:border-box;overflow:auto}
+    .sidebar h2{font-size:1.05rem;margin:0 0 12px}
+    .persona-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+    .persona{padding:8px;border-radius:8px;cursor:pointer;background:rgba(255,255,255,0.02)}
+    .persona:hover{background:rgba(255,255,255,0.04)}
+    .persona.active{background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 2px rgba(255,255,255,0.03)}
+    .main{flex:1;display:flex;flex-direction:column;padding:20px;box-sizing:border-box}
+    .header{display:flex;align-items:center;gap:12px}
+    .persona-title{font-size:1.25rem;margin:0}
+  /* mobile sidebar toggle button */
+  #sidebar-toggle{display:none;margin-left:auto;background:transparent;border:0;color:#111;padding:6px;border-radius:6px;height:36px;width:36px;}
+  #sidebar-toggle svg{width:24px;height:24px}
+    .chat-wrap{flex:1;display:flex;flex-direction:column;margin-top:12px}
+    .chat-container{flex:1;overflow:auto;border:1px solid #ddd;border-radius:10px;padding:12px;background:#fff}
+    .input-area{display:flex;gap:8px;margin-top:12px}
+    .input-area input{flex:1;padding:10px;border-radius:8px;border:1px solid #ccc}
+    .input-area button{padding:10px 14px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+    .meta{color:#666;font-size:0.9rem;margin-top:6px}
+    /* Mobile: make sidebar off-canvas and add a toggle */
+    @media (max-width:800px){
+      .app{flex-direction:column}
+      .main{padding:12px}
+      #sidebar-toggle{display:block;background:white;z-index: 100;}
+      .sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;transform:translateX(-100%);transition:transform 240ms ease-in-out;box-shadow: 2px 0 12px rgba(0,0,0,0.4);z-index:60}
+      .sidebar.open{transform:translateX(0);top:70px;position: absolute;}
+      /* backdrop when sidebar is open */
+      #sidebar-backdrop{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:50}
+      #sidebar-backdrop.show{display:block}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>AI Personas</h2>
+      <ul class="persona-list">
+        {% comment %} Prefer the `personas` collection if available; fall back to posts for compatibility. {% endcomment %}
+        {% assign source = site.personas | default: site.posts %}
+        {% for post in source %}
+          {% if post.chatbot %}
+            <li class="persona" data-permalink="{{ post.url }}" data-id="{{ post.persona_id }}" data-system='{{ post.system_prompt | jsonify }}' data-description='{{ post.description | default: post.title | escape }}' data-temp='{{ post.temperature | default: 1.0 }}'>
+              {% if post.image %}
+              <img src="https://airychat.com{{ post.image }}" alt="{{ post.title }} image" style="width:64px;height:64px;object-fit:cover;border-radius:50%;margin-right:8px;vertical-align:middle;">
+              {% endif %}
+                <strong style="text-transform: capitalize;">{{ post.persona_id }}</strong>
+              {% if post.description %}
+                <div style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin-top:4px">{{ post.description | truncate: 80 }}</div>
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="header">
+          <h1 class="persona-title">Select a persona to start chatting</h1>
+          <!-- Mobile sidebar toggle (hamburger). Visible only on small screens -->
+          <button id="sidebar-toggle" aria-label="Toggle personas">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+      </div>
+
+  <!-- persona meta removed (no inline system text) -->
+
+      <div class="chat-wrap">
+        <div class="chat-container" id="chat-container">Welcome — pick a persona on the left.</div>
+
+        <div class="input-area">
+          <input id="user-input" placeholder="Type a message..." maxlength="1000" />
+          <button id="send-button">Send</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+  <footer class="site-footer">
+    {% include footer.html %}
+  </footer>
+
+  <script>
+    // Build a simple client that loads persona config from the sidebar list (rendered at build time).
+  const personaEls = Array.from(document.querySelectorAll('.persona'));
+    const titleEl = document.querySelector('.persona-title');
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+
+  // Persona meta and temperature slider removed to keep UI minimal.
+
+    let current = null; // {id, title, system, permalink}
+
+    function renderMessage(role, text){
+      const d = document.createElement('div');
+      d.className = 'message ' + (role === 'user' ? 'user-message' : 'ai-message');
+      d.textContent = text;
+      chatContainer.appendChild(d);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Simple selection
+    function selectPersonaEl(el){
+      personaEls.forEach(e=>e.classList.remove('active'));
+      el.classList.add('active');
+    const description = el.getAttribute('data-description') || el.getAttribute('data-title') || '';
+    const system = el.getAttribute('data-system');
+      const permalink = el.getAttribute('data-permalink');
+    const id = el.getAttribute('data-id') || description.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    const temp = el.getAttribute('data-temp') || '1.0';
+    current = { id, description: description, system: system || '', permalink, temperature: parseFloat(temp) };
+  titleEl.textContent = current.description;
+      chatContainer.innerHTML = '';
+  // Update the URL (virtual page) and notify Google Analytics (gtag) so each persona
+  // selection is tracked as a separate pageview. This keeps analytics accurate for SPA behavior.
+  try {
+    const newPath = `/classic-app/?persona=${encodeURIComponent(current.id)}`;
+    history.replaceState(null, current.description, newPath);
+    if (typeof gtag === 'function') {
+      // Use your GA4 measurement ID configured in _includes/analytics.html
+      gtag('config', 'G-WSXRFFJDL1', { page_path: newPath, page_title: current.description });
+    }
+  } catch (e) {
+    console.warn('Failed to update history or analytics for persona selection', e);
+  }
+  // persona default temperature is used for requests; no slider shown in UI
+    renderMessage('assistant', `Hi, I'm ${current.description}. How can I help?`);
+    }
+
+    personaEls.forEach(el => el.addEventListener('click', ()=> selectPersonaEl(el)));
+
+  // Worker endpoint (client should update to their Worker)
+  const WORKER_BASE = 'https://airychat.com/api/v1';
+
+  // ----- BEGIN TEMPORARY SARAH API OVERRIDE -----
+  // Temporarily route chat requests to the Sarah API for testing.
+  // NOTE: This is a short-lived change for local/dev testing. Revert
+  // CHAT_ENDPOINT back to `WORKER_BASE + '/chat'` when you're done.
+  const CHAT_ENDPOINT = 'https://airychat.com/api/v1/github/sarah-chat';
+  // ----- END TEMPORARY SARAH API OVERRIDE -----
+
+  // Mobile sidebar toggle: wire up the hamburger and backdrop
+  (function setupMobileSidebar(){
+    const toggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    // create backdrop element (insert once)
+    let backdrop = document.getElementById('sidebar-backdrop');
+    if(!backdrop){
+      backdrop = document.createElement('div');
+      backdrop.id = 'sidebar-backdrop';
+      document.body.appendChild(backdrop);
+    }
+
+    function openSidebar(){
+      sidebar.classList.add('open');
+      backdrop.classList.add('show');
+      toggle.setAttribute('aria-expanded','true');
+    }
+    function closeSidebar(){
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('show');
+      toggle.setAttribute('aria-expanded','false');
+    }
+
+    // Toggle handler
+    toggle && toggle.addEventListener('click', ()=>{
+      if(sidebar.classList.contains('open')) closeSidebar(); else openSidebar();
+    });
+
+    // Clicking the backdrop closes the sidebar
+    backdrop.addEventListener('click', closeSidebar);
+
+    // Close sidebar when window is resized to desktop to avoid stuck state
+    window.addEventListener('resize', ()=>{
+      if(window.innerWidth > 800){
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('show');
+      }
+    });
+  })();
+
+    sendButton.addEventListener('click', async ()=>{
+      if(!current){ alert('Select a persona first'); return; }
+      const text = userInput.value.trim(); if(!text) return; userInput.value = '';
+      renderMessage('user', text);
+
+      // Build messages with the persona system prompt
+      const messages = [{ role: 'system', content: current.system || '' }, { role: 'user', content: text }];
+
+  // Determine temperature: use persona default
+  const temperature = current.temperature || 1.0;
+
+      // Send to Worker (expects Authorization header with firebase id token if you use auth)
+      const idToken = localStorage.getItem('firebase_id_token') || '';
+      try{
+        const res = await fetch(CHAT_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature })
+        });
+        const data = await res.json();
+        const reply = data?.choices?.[0]?.message?.content || data?.message || JSON.stringify(data);
+        renderMessage('assistant', reply);
+      }catch(err){
+        console.error(err);
+        renderMessage('assistant', 'Error contacting backend');
+      }
+    });
+
+    // Deep-link support: ?persona=<id> will auto-select that persona by persona_id or title
+    (function autoSelectFromQuery(){
+      const params = new URLSearchParams(location.search);
+      const personaParam = params.get('persona');
+      if(personaParam){
+  const found = personaEls.find(el => (el.getAttribute('data-id') === personaParam) || (el.getAttribute('data-description') && el.getAttribute('data-description').toLowerCase() === personaParam.toLowerCase()));
+        if(found) { selectPersonaEl(found); return; }
+      }
+      if(personaEls.length) selectPersonaEl(personaEls[0]);
+    })();
+  </script>
+</body>
+</html>

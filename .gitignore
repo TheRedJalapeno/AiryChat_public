@@ -8,3 +8,4 @@ TODO.md
 Thumbs.db
 *.log
 *.tmp
+workers/airy-worker.js
