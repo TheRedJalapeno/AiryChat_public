@@ -1,0 +1,306 @@
+---
+layout: simple
+title: "Sign in — AiryChat"
+permalink: /login/
+description: "Sign in to AiryChat"
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — AiryChat (Jekyll)</title>
+  <style>
+    :root{--bg:#94a3b8;--card:#ffffff;--muted:#94a3b8;--accent:#1f293a}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    .background-pattern{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background-color:var(--bg);overflow:hidden}
+    .background-pattern::before{content:"";position:absolute;inset:0;background-image:url('/assets/images/bgClouds.webp');background-repeat:repeat;background-position-y:top;background-size:500px;background-blend-mode:color;animation:scrollBackground 190s linear infinite;opacity:1;z-index:0}
+    @keyframes scrollBackground{from{background-position:0}to{background-position:100%}}
+
+    .card{position:relative;z-index:10;background:var(--card);border-radius:8px;padding:1.5rem;width:100%;max-width:520px;box-shadow:0 10px 30px rgba(2,6,23,0.14);border:2px solid #e6e6e6}
+    .logo{display:flex;justify-content:center;margin-bottom:0.75rem}
+    .btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.7rem 1rem;border-radius:9999px;border:2px solid #d1d5db;background:#fff;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+    .btn:hover{transform:scale(1.02)}
+    .btn.google img{width:20px}
+    .btn.microsoft svg{width:20px;height:20px}
+    .separator{display:flex;align-items:center;gap:0.75rem;margin:1rem 0}
+    .separator .line{height:1px;background:#000;opacity:.15;flex:1}
+    .form-field{margin-bottom:0.75rem}
+    input[type="text"],input[type="password"]{width:100%;padding:0.75rem;border-radius:9999px;border:1px solid #e5e7eb}
+    .submit{background:linear-gradient(90deg,#0ea5a4,#1f293a);color:#fff;padding:0.85rem;border-radius:9999px;text-align:center;cursor:pointer}
+    .error{display:flex;gap:0.5rem;align-items:center;color:#b45309;font-weight:700;margin:0.5rem 0}
+    .success{display:flex;gap:0.5rem;align-items:center;color:#047857;font-weight:700}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:50}
+    .modal{background:#f3f4f6;padding:1rem;border-radius:8px;border:2px solid #374151;max-width:420px}
+
+    /* small spinner */
+    .spinner{width:24px;height:24px;border-radius:50%;border:3px solid rgba(0,0,0,0.12);border-top-color:rgba(0,0,0,0.6);animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    @media (max-width:640px){.card{padding:1rem;margin:0 0.5rem}}
+  </style>
+<!-- Firebase SDKs: replace firebaseConfig below with your project's config -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+  // TODO: replace with your Firebase project's config
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    appId: "YOUR_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+</head>
+<body>
+  <main class="background-pattern" role="main">
+    <div id="open-default-modal" class="modal-backdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true">
+        <p style="margin-bottom:1rem">Unfortunately, AiryChat is not supported inside some in-app browsers. Please open AiryChat in your native browser.</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <a id="open-chrome" href="#" style="display:none;padding:.5rem .75rem;background:#111;color:#fff;border-radius:6px;text-decoration:none">Open in Google Chrome</a>
+          <a id="open-safari" href="#" style="display:none;padding:.5rem .75rem;background:#111;color:#fff;border-radius:6px;text-decoration:none">Open in Safari</a>
+          <button id="close-modal" style="padding:.5rem .75rem;border-radius:6px">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" role="region" aria-labelledby="login-heading">
+      <div class="logo">
+        <img src="/assets/images/logo.png" alt="AiryChat logo" style="height:64px;object-fit:contain">
+      </div>
+
+      <h2 id="login-heading" style="text-align:center;margin:0 0 0.5rem;font-size:1.1rem">Sign in to AiryChat</h2>
+
+      <div id="form-area">
+        <div style="display:flex;flex-direction:column;gap:0.75rem">
+          <button id="google-btn" class="btn google" aria-label="Continue with Google">
+            <img src="/assets/images/googleLogo.webp" alt="Google logo">
+            <span>Continue with Google</span>
+          </button>
+
+          <button id="microsoft-btn" class="btn microsoft" aria-label="Continue with Microsoft">
+            <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+              <path fill="#F1511B" d="M121.666 121.666H0V0h121.666z"/>
+              <path fill="#80CC28" d="M256 121.666H134.335V0H256z"/>
+              <path fill="#00ADEF" d="M121.663 256.002H0V134.336h121.663z"/>
+              <path fill="#FBBC09" d="M256 256.002H134.335V134.336H256z"/>
+            </svg>
+            <span>Continue with Microsoft</span>
+          </button>
+
+          <div class="separator" aria-hidden="true">
+            <div class="line"></div>
+            <div style="color:#9ca3af;font-weight:600;font-size:.75rem;white-space:nowrap">Or login with Email</div>
+            <div class="line"></div>
+          </div>
+
+          <div class="form-field">
+            <input id="email" type="text" placeholder="Your email" autocomplete="email" />
+          </div>
+          <div class="form-field">
+            <input id="password" type="password" placeholder="Your password" autocomplete="current-password" />
+          </div>
+
+          <div id="error" class="error" style="display:none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="flex:0 0 auto"><path d="M12 17q.425 0 .713-.288T13 16q0-.425-.288-.713T12 15q-.425 0-.713.288T11 16q0 .425.288.713T12 17Zm-1-4h2V7h-2v6Zm1 9q-2.075 0-3.9-.788t-3.175-2.137q-1.35-1.35-2.137-3.175T2 12q0-2.075.788-3.9t2.137-3.175q1.35-1.35 3.175-2.137T12 2q2.075 0 3.9.788t3.175 2.137q1.35 1.35 2.138 3.175T22 12q0 2.075-.788 3.9t-2.137 3.175q-1.35 1.35-3.175 2.138T12 22Z"></path></svg>
+            <div id="error-text"></div>
+          </div>
+
+          <div id="submit" class="submit" role="button" tabindex="0">Log in</div>
+        </div>
+      </div>
+
+      <div id="success-area" style="display:none;flex-direction:column;align-items:center;gap:.75rem;margin-top:1rem">
+        <div class="success">
+          <svg width="48" height="48" viewBox="0 0 1024 1024"><path fill="currentColor" d="M512 64a448 448 0 1 1 0 896a448 448 0 0 1 0-896zm-55.808 536.384l-99.52-99.584a38.4 38.4 0 1 0-54.336 54.336l126.72 126.72a38.272 38.272 0 0 0 54.336 0l262.4-262.464a38.4 38.4 0 1 0-54.272-54.336L456.192 600.384z"></path></svg>
+          <div>You’ve logged in successfully. Preparing your workspace.</div>
+        </div>
+        <div class="spinner" aria-hidden="true"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      // Basic DOM helpers
+      const $ = id => document.getElementById(id);
+      const email = $('email');
+      const password = $('password');
+      const error = $('error');
+      const errorText = $('error-text');
+      const submit = $('submit');
+      const successArea = $('success-area');
+      const formArea = $('form-area');
+
+      // Buttons
+      const googleBtn = $('google-btn');
+      const msBtn = $('microsoft-btn');
+
+      // Modal controls
+      const modalBackdrop = $('open-default-modal');
+      const openChrome = $('open-chrome');
+      const openSafari = $('open-safari');
+      const closeModal = $('close-modal');
+
+      // Keys used by Bob page
+      const FIREBASE_TOKEN_KEY = 'firebase_id_token';
+      const FIREBASE_UID_KEY = 'firebase_uid';
+
+      // Redirect helper: preserve intended destination before redirecting users to login
+      if (!sessionStorage.getItem('redirect_after_login')) {
+        // default to Bob app; if user arrived here from a specific page the client can set this value
+        sessionStorage.setItem('redirect_after_login', '/app/bob');
+      }
+      const redirectAfterLogin = () => {
+        const dest = sessionStorage.getItem('redirect_after_login') || '/app/bob';
+        window.location.href = dest;
+      };
+
+      // Map of error strings similar to Firebase errors
+      function mapError(code){
+        switch(code){
+          case 'invalid-email': return 'The email address is badly formatted.';
+          case 'user-disabled': return 'The user corresponding to the given email has been disabled.';
+          case 'user-not-found': return 'There is no user corresponding to the given email.';
+          case 'wrong-password': return 'The password is invalid for the given email.';
+          case 'email-already-in-use': return 'The email address is already in use by another account.';
+          case 'weak-password': return 'The password is too weak.';
+          default: return code || 'Something went wrong.';
+        }
+      }
+
+      function showError(msg){errorText.textContent = msg; error.style.display = 'flex';}
+      function hideError(){error.style.display = 'none'; errorText.textContent = '';}
+
+      // Simple email check (avoid heavy regex in static file)
+      function validateEmailSimple(e){
+        return e && e.indexOf('@') > -1 && e.indexOf('.') > -1;
+      }
+
+      // Store ID token and uid then redirect
+      async function storeTokenAndRedirect(user){
+        try{
+          const idToken = await user.getIdToken(true);
+          localStorage.setItem(FIREBASE_TOKEN_KEY, idToken);
+          localStorage.setItem(FIREBASE_UID_KEY, user.uid);
+          // keep a short-lived flag in session so pages can detect intent
+          sessionStorage.removeItem('redirect_after_login');
+          redirectAfterLogin();
+        }catch(err){
+          console.error('Failed to get ID token', err);
+          showError('Authentication succeeded but failed to obtain ID token. Try again.');
+          formArea.style.display = 'block';
+          successArea.style.display = 'none';
+        }
+      }
+
+      // Email/password sign-in (creates account if not found)
+      async function signInWithMail(emailAddr, pwd){
+        hideError();
+        if(!emailAddr || !validateEmailSimple(emailAddr)){
+          showError(mapError('invalid-email'));
+          return;
+        }
+        if(!pwd || pwd.length < 6){
+          showError(mapError('weak-password'));
+          return;
+        }
+
+        formArea.style.display = 'none';
+        successArea.style.display = 'flex';
+
+        try{
+          const cred = await firebase.auth().signInWithEmailAndPassword(emailAddr, pwd);
+          await storeTokenAndRedirect(cred.user);
+        }catch(err){
+          // If user not found, create new account automatically
+          if(err && err.code === 'auth/user-not-found'){
+            try{
+              const newCred = await firebase.auth().createUserWithEmailAndPassword(emailAddr, pwd);
+              await storeTokenAndRedirect(newCred.user);
+            }catch(err2){
+              console.error(err2);
+              showError(mapError(err2.code));
+              formArea.style.display = 'block';
+              successArea.style.display = 'none';
+            }
+          }else{
+            console.error(err);
+            showError(mapError(err.code));
+            formArea.style.display = 'block';
+            successArea.style.display = 'none';
+          }
+        }
+      }
+
+      // Social sign-ins
+      googleBtn.addEventListener('click', async ()=>{
+        hideError();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try{
+          const result = await firebase.auth().signInWithPopup(provider);
+          await storeTokenAndRedirect(result.user);
+        }catch(err){
+          console.error(err);
+          showError(mapError(err.code || err.message));
+        }
+      });
+
+      msBtn.addEventListener('click', async ()=>{
+        hideError();
+        // Microsoft OAuth provider - configure in Firebase console if you plan to use it
+        const provider = new firebase.auth.OAuthProvider('microsoft.com');
+        try{
+          const result = await firebase.auth().signInWithPopup(provider);
+          await storeTokenAndRedirect(result.user);
+        }catch(err){
+          console.error(err);
+          showError(mapError(err.code || err.message));
+        }
+      });
+
+      // Submit handlers
+      submit.addEventListener('click', ()=> signInWithMail(email.value.trim(), password.value));
+      submit.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') signInWithMail(email.value.trim(), password.value); });
+
+      // Modal / in-app browser detection (unchanged)
+      const ua = navigator.userAgent || '';
+      if(/FBAN|FBAV/i.test(ua)){
+        modalBackdrop.style.display = 'flex';
+        modalBackdrop.setAttribute('aria-hidden','false');
+
+        const isAndroid = /Android/i.test(ua);
+        const isIos = /iPhone|iPad|iPod/i.test(ua);
+        if(isAndroid){ openChrome.style.display = 'inline-block'; openChrome.href = 'googlechrome://'+location.host+location.pathname; }
+        if(isIos){ openSafari.style.display = 'inline-block'; openSafari.href = 'x-web-search://?'+location.host; }
+      }
+      closeModal.addEventListener('click', ()=>{ modalBackdrop.style.display = 'none'; modalBackdrop.setAttribute('aria-hidden','true'); });
+      document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true'); } });
+
+      // Monitor auth state: keep ID token fresh and available to other pages
+      firebase.auth().onAuthStateChanged(async (user) => {
+        if(user){
+          successArea.style.display = 'flex';
+          formArea.style.display = 'none';
+          try{
+            const idToken = await user.getIdToken(true);
+            localStorage.setItem(FIREBASE_TOKEN_KEY, idToken);
+            localStorage.setItem(FIREBASE_UID_KEY, user.uid);
+            // refresh token every 25 minutes
+            setInterval(async ()=>{
+              try{ const fresh = await user.getIdToken(true); localStorage.setItem(FIREBASE_TOKEN_KEY, fresh); }catch(e){ console.warn('Token refresh failed', e); }
+            }, 25 * 60 * 1000);
+            setTimeout(()=> redirectAfterLogin(), 800);
+          }catch(err){ console.error('Failed to store token', err); }
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>
