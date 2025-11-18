@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en">
 
-    {% include header.html %}
+    {% include head.html %}
     {% include nav.html %}
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{{ page.title | default: "Classic App" }}</title>
+  <title>{{ page.title | default: "AiryChat Classic App" }}</title>
   <style>
     #main-header{height:10vh;}
     nav {height: 50px;}
@@ -96,6 +96,7 @@
 
   <footer class="site-footer">
     {% include footer.html %}
+    {% include analytics.html %}
   </footer>
 
   <script>

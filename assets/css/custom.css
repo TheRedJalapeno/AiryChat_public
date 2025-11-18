@@ -9,6 +9,13 @@ body {
     padding: 0;
 }
 
+.color_wheat {
+    background-color: #f5deb3;
+}
+.color_skyblue {
+    background-color: #87ceeb;
+}
+
 h1,
 h2,
 h3,
@@ -163,6 +170,11 @@ article {
     padding: 1rem 2rem;
     text-decoration: none;
 }
+.section.pb_section{
+    padding: 2rem 0;
+    border-radius: 2rem;
+    margin-top: 1rem;
+}
 
 div.section-headline {
     margin: auto;
@@ -226,6 +238,21 @@ div.section-headline {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team_member_wide {
+    background-color: var(--preset-light);
+    color: var(--preset-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 90%;
+    width: 800px;
+    padding: 5%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin:auto;
 }
 
 .team_member img {
