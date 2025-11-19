@@ -11,9 +11,17 @@ body {
 
 .color_wheat {
     background-color: #f5deb3;
+    color: var(--preset-dark);
 }
 .color_skyblue {
     background-color: #87ceeb;
+    color: var(--preset-dark);
+}
+.color_yellow {
+    background-color: #fdf1d1;
+    color: var(--preset-dark);
+    padding: 2rem;
+    border-radius: 2rem;
 }
 
 h1,
@@ -143,18 +151,12 @@ article {
     background-color: #3b82f6;
     padding: 20px;
     border-radius: 0 0 3em 3em;
+    color: var(--preset-light);
 }
 
 .hero-section p,
 .hero-section h1 {
     color: var(--preset-light);
-}
-
-.section-yellow {
-    background-color: #fdf1d1;
-    color: var(--preset-dark);
-    padding: 2rem;
-    border-radius: 2rem;
 }
 
 .button-wrapper {
