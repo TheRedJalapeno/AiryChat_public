@@ -6,14 +6,170 @@
         <img src="{{ site.baseurl }}/assets/images/Logo_Pill.webp" width="1212" height="350" alt="AiryChat" id="logo" data-height-percentage="70" data-actual-width="1212" data-actual-height="351.483">
       </a>
     </div>
-    <div class="menu-item-container">
+    
+    <!-- Hamburger Toggle Button (hidden on desktop) -->
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    
+    <!-- Navigation Menu -->
+    <div class="nav-menu">
+      <div class="menu-item-container">
         <a href="{{ site.baseurl }}/classic-app" title="AiryChat Classic" rel="classic" class="nav-link">Classic App</a>
-    </div>
-    <div class="menu-item-container">
+      </div>
+      <div class="menu-item-container">
         <a href="{{ site.baseurl }}/business" title="Business Services" rel="business" class="nav-link">AI for Business</a>
-    </div>
-    <div class="menu-item-container">
+      </div>
+      <div class="menu-item-container">
         <a href="{{ site.baseurl }}/sarah" title="Sarah" rel="sarah" class="nav-link">Demo of Sarah</a>
+      </div>
     </div>
-  </nav> <!-- .container -->
+  </nav>
 </header>
+
+<style>
+  /* Hamburger toggle button - hidden on desktop */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1001;
+}
+
+.hamburger-line {
+  width: 25px;
+  height: 3px;
+  background-color: #333;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Animate hamburger to X when open */
+.nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translate(7px, 7px);
+}
+
+.nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Backdrop */
+#nav-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#nav-backdrop.show {
+  display: block;
+  opacity: 1;
+}
+
+/* Mobile styles */
+@media (max-width: 800px) {
+  .nav-toggle {
+    display: flex;
+  }
+  
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    right: -300px; /* Start off-screen to the right */
+    width: 300px;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    padding: 80px 20px 20px;
+    overflow-y: auto;
+  }
+  
+  .nav-menu.open {
+    right: 0; /* Slide in from right */
+  }
+  
+  .menu-item-container {
+    display: block;
+    margin-bottom: 20px;
+  }
+  
+  .nav-link {
+    display: block;
+    padding: 15px 10px;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+  }
+}
+</style>
+
+<script>
+  // Mobile navigation toggle: wire up the hamburger and backdrop
+(function setupMobileNav(){
+  const toggle = document.getElementById('nav-toggle');
+  const navMenu = document.querySelector('.nav-menu');
+  
+  // Create backdrop element
+  let backdrop = document.getElementById('nav-backdrop');
+  if(!backdrop){
+    backdrop = document.createElement('div');
+    backdrop.id = 'nav-backdrop';
+    document.body.appendChild(backdrop);
+  }
+  
+  function openNav(){
+    navMenu.classList.add('open');
+    backdrop.classList.add('show');
+    toggle.setAttribute('aria-expanded','true');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+  }
+  
+  function closeNav(){
+    navMenu.classList.remove('open');
+    backdrop.classList.remove('show');
+    toggle.setAttribute('aria-expanded','false');
+    document.body.style.overflow = ''; // Restore scrolling
+  }
+  
+  // Toggle handler
+  toggle && toggle.addEventListener('click', ()=>{
+    if(navMenu.classList.contains('open')) closeNav(); 
+    else openNav();
+  });
+  
+  // Clicking the backdrop closes the nav
+  backdrop.addEventListener('click', closeNav);
+  
+  // Close menu when clicking a link
+  const navLinks = navMenu.querySelectorAll('.nav-link');
+  navLinks.forEach(link => {
+    link.addEventListener('click', closeNav);
+  });
+  
+  // Close nav when window is resized to desktop to avoid stuck state
+  window.addEventListener('resize', ()=>{
+    if(window.innerWidth > 800){
+      navMenu.classList.remove('open');
+      backdrop.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  });
+})();
+</script>

@@ -118,7 +118,10 @@ div.logo_container {
 
 div.menu-item-container {
     display: block;
-    margin-left: auto;
+    margin: auto;
+    padding: .5rem;
+    border: 1px solid blue;
+    border-radius: 3rem;
 }
 
 a.nav-link {
