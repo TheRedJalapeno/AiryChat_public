@@ -90,7 +90,8 @@ header {
 nav {
     background-color: white;
     color: var(--preset-verydark);
-    padding: 10px 20px;
+    padding: 0px 20px;
+    height: 70px;
     display: flex;
     align-items: center;
     justify-content: space-between;
