@@ -21,6 +21,7 @@
     .main{flex:1;display:flex;flex-direction:column;padding:20px;box-sizing:border-box}
     .header{display:flex;align-items:center;gap:12px}
     .persona-title{font-size:1.25rem;margin:0}
+    .message-wrapper {width: 100%; display: block;}
     .message {display: inline-block;margin: auto;max-width: 90%;padding: 8px;border-radius: 8px;background: #f5f5f5;margin: 3px 0;}
     .message.user-message {background: lightcyan;float: right;}
   /* mobile sidebar toggle button */
@@ -106,17 +107,20 @@
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
-  // Persona meta and temperature slider removed to keep UI minimal.
-
     let current = null; // {id, title, system, permalink}
 
-    function renderMessage(role, text){
-      const d = document.createElement('div');
-      d.className = 'message ' + (role === 'user' ? 'user-message' : 'ai-message');
-      d.textContent = text;
-      chatContainer.appendChild(d);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+function renderMessage(role, text){
+  const wrapper = document.createElement('span');
+  wrapper.className = 'message-wrapper';
+  
+  const d = document.createElement('div');
+  d.className = 'message ' + (role === 'user' ? 'user-message' : 'ai-message');
+  d.textContent = text;
+  
+  wrapper.appendChild(d);
+  chatContainer.appendChild(wrapper);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
     // Simple selection
     function selectPersonaEl(el){
